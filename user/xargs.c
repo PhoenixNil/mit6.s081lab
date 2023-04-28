@@ -64,18 +64,18 @@ int main(int argc, char *argv[])
         }
 
         // Split line into arguments
-        args[0] = argv[1];
-        for (i = 2; i < argc; i++) // argv[0]是xargs，argv[1]是command，argv[2]是command后面的参数
+        args[0] = argv[1]; // argv[0]是xargs，argv[1]是command，argv[2]是command后面的参数
+        for (i = 2; i < argc; i++) 
         {
             args[i - 1] = argv[i];
         }
         args[argc - 1] = buf; // 把输入放到最后一个位置，比如echo "param1" | xargs mycommand, echo "parama1"是buf，mycommand是argv[1]
-        args[argc] = 0;//代表参数结束
+        args[argc] = 0;       // 代表参数结束
 
         // Fork a child process to run the command
         if (fork() == 0)
         {
-            exec(args[0], args);
+            exec(args[0], args); // 在这段代码中，exec(args[0], args)的作用是执行一个新的程序。具体来说，它将第一个参数args[0]作为要执行的程序的名称，将args数组作为要传递给程序的参数
             exit(0);
         }
         else
