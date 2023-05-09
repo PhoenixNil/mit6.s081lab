@@ -80,7 +80,34 @@ sys_sleep(void)
 int
 sys_pgaccess(void)
 {
+  //在xv6中，不能直接将系统调用的参数作为函数的参数传递。
+  //相反，我们需要使用argaddr()和argint()函数将参数复制到内核空间中，并在函数中使用这些复制后的参数值。
+  //这样，我们就可以在内核空间中安全地访问这些参数值，而不会影响用户空间中的数据。
   // lab pgtbl: your code here.
+  int numpage;
+  uint64 pageaddr,useraddr;
+  struct proc *p = myproc();
+  if(argaddr(0, &pageaddr) < 0) //arg0 is the address of the page
+    return -1;
+  if(argint(1, &numpage) < 0)  //arg1 is the number of pages
+    return -1;
+  if(argaddr(2, &useraddr) < 0) //arg2 is a user address to a buffer to store the results into a bitmask
+    return -1;
+  if(numpage>32)
+    return -1;
+  uint64 res=0;
+  uint64 abit=1;
+  for(uint64 i=0;i<numpage;i++)
+  {
+    uint64 va=pageaddr+i*PGSIZE;
+    pte_t* pte = walk(p->pagetable, va, 0); //get the pte
+    if((*pte & PTE_A)!=0){ //check the access bit
+      *pte=*pte&(~PTE_A); //clear the access bit
+      res = res|(abit<<i); //set the bit in the bitmask
+    }
+  }
+  if(copyout(p->pagetable, useraddr,(char*)&res,sizeof(res))<0) //copy the bitmask to the user address
+    return -1;
   return 0;
 }
 #endif

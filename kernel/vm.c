@@ -432,3 +432,31 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
     return -1;
   }
 }
+void vmprint(pagetable_t pagetable)
+{
+  if(pagetable == 0)
+    pagetable = kernel_pagetable;
+  printf("page table %p\n", pagetable);
+  pteprint(pagetable,0);
+
+}
+void pteprint(pagetable_t pagetable,int level)
+{
+  for(int i=0;i<512;i++)
+  {
+    pte_t pte = pagetable[i];
+    if(pte & PTE_V)            //页表项是否有效
+    {
+      for(int j=2-level;j<3;j++){
+        printf("  ");
+        printf("..");
+      }
+      printf("%d: pte %p pa %p\n",i,pte,PTE2PA(pte));
+      if((pte & (PTE_R|PTE_W|PTE_X)) == 0)  //非叶子节点
+      {
+        pagetable_t child = (pagetable_t)PTE2PA(pte);
+        pteprint(child,level+1);
+      }
+    }
+  }
+}
