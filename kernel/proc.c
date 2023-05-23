@@ -113,6 +113,10 @@ allocproc(void)
 
   for(p = proc; p < &proc[NPROC]; p++) {
     acquire(&p->lock);
+    p->alarminveral=0;
+    p->alarmticks=0;
+    p->is_alarming = 0;
+    p->alarmhandler = 0;
     if(p->state == UNUSED) {
       goto found;
     } else {
@@ -127,6 +131,11 @@ found:
 
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
+    freeproc(p);
+    release(&p->lock);
+    return 0;
+  }
+  if((p->usertrapframe = (struct trapframe *)kalloc())==0){   //分配一块内存为恢复执行handler之前的状态
     freeproc(p);
     release(&p->lock);
     return 0;
@@ -157,6 +166,8 @@ freeproc(struct proc *p)
 {
   if(p->trapframe)
     kfree((void*)p->trapframe);
+  if(p->usertrapframe)
+    kfree((void*)p->usertrapframe);
   p->trapframe = 0;
   if(p->pagetable)
     proc_freepagetable(p->pagetable, p->sz);
@@ -169,6 +180,10 @@ freeproc(struct proc *p)
   p->killed = 0;
   p->xstate = 0;
   p->state = UNUSED;
+  p->alarminveral=0;
+  p->alarmticks=0;
+  p->is_alarming = 0;
+  p->alarmhandler = 0;
 }
 
 // Create a user page table for a given process, with no user memory,

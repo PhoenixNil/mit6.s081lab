@@ -133,3 +133,14 @@ printfinit(void)
   initlock(&pr.lock, "pr");
   pr.locking = 1;
 }
+
+void backtrace(void)
+{
+  printf("backtrace:\n");
+  uint64 fp = r_fp(); // r_fp() is the frame pointer register
+  while(fp>PGROUNDDOWN(fp)&&fp<PGROUNDUP(fp)){
+    printf(" %p\n", *(uint64*)(fp-8));  // fp-8 is the return address
+    fp = *(uint64*)(fp-16); // fp-16 is the frame pointer of the previous function
+  }
+
+}
