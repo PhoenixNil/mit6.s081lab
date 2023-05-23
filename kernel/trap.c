@@ -78,8 +78,17 @@ usertrap(void)
 
   // give up the CPU if this is a timer interrupt.
   if(which_dev == 2)
+  {
+    p->alarmticks++;  //时钟中断,增加alarmticks
+    if(p->alarmticks==p->alarminveral&&!p->is_alarming) //alarmticks达到alarminterval时，触发alarmhandler
+    {
+      memmove(p->usertrapframe,p->trapframe, sizeof(struct trapframe));
+      p->alarmticks = 0; //reset alarmticks重新计数
+      p->is_alarming = 1;
+      p->trapframe->epc = p->alarmhandler;  
+    }
     yield();
-
+  }
   usertrapret();
 }
 
