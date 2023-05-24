@@ -107,6 +107,6 @@ struct proc {
   int alarminveral;             // alarm interval
   uint64 alarmhandler;      // alarm handler
   int alarmticks;              // ticks left for alarm
-  struct trapframe  *usertrapframe; //保存用户进程的trapframe
+  struct trapframe  *usertrapframe; //保存用户进程的trapframe,包含了用户进程的寄存器信息
   int is_alarming;                    // 是否正在执行告警处理函数
 };

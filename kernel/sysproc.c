@@ -107,7 +107,7 @@ uint64
 sys_sigreturn(void) // return user space
 {
   struct proc *p = myproc();
-  memmove(p->trapframe, p->usertrapframe, sizeof(struct trapframe)); // restore trapframe
+  memmove(p->trapframe, p->usertrapframe, sizeof(struct trapframe)); // restore user registers from trampframe
   p->is_alarming = 0;
   return p->trapframe->a0;
 }
